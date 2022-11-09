@@ -9,21 +9,34 @@ public class UsuarioConfigurador extends Usuario implements IConfigurable {
 	@Override
 	public void agregarUnUsuarioALaListaDeUsuariosDeUnaAlarma(Integer dni, Integer idAlarma, String configCode)
 			throws CodigoAlarmaIncorrectoException {
-		// TODO Auto-generated method stub
-
+		if(central.obtenerAlarmaPorId(idAlarma).getCodigoConfiguracion().equals(configCode)) {
+			central.obtenerAlarmaPorId(idAlarma).agregarUsuarioValido(central.obtenerUsuarioPorDni(dni), configCode);
+		} else {
+			throw new CodigoAlarmaIncorrectoException("Codigo de Configuracion incorrecto");
+		}
+		
 	}
 
 	@Override
 	public void agregarSensorAUnaAlarma(Integer idAlarma, String configCode, Sensor sensor)
 			throws SensorDuplicadoException {
-		// TODO Auto-generated method stub
-
+		if(central.obtenerAlarmaPorId(idAlarma).getCodigoConfiguracion().equals(configCode)) {
+			if(central.obtenerAlarmaPorId(idAlarma).agregarSensor(sensor)) {
+				return;
+			}
+			throw new SensorDuplicadoException("Sensor ya existente");
+		}
+		
 	}
 
 	@Override
 	public void activarSensorDeUnaAlarma(Integer idSensor, Integer idAlarma, String configCode) {
-		// TODO Auto-generated method stub
-
+		if(central.obtenerAlarmaPorId(idAlarma).getCodigoConfiguracion().equals(configCode)) {
+			central.obtenerAlarmaPorId(idAlarma).activarSensor(idSensor); 		
+		} 
+		
 	}
 
+	
+	
 }

@@ -8,8 +8,10 @@ public class UsuarioActivador extends Usuario implements IActivable {
 
 	@Override
 	public Boolean activarDesactivarAlarma(Alarma alarma, String activeCode) {
-		// TODO Auto-generated method stub
-		return null;
+		if (alarma.getCodigoActivacion().equals(activeCode)) {
+			return alarma.activarDesactivar();
+		} else
+			return false;
 	}
 
 }

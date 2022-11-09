@@ -30,6 +30,36 @@ public class Central {
 	public Boolean agregarUsuario(Usuario usuario) {
 		return usuarios.add(usuario);
 	}
+
+	public Alarma buscarAlarmaPorId(Integer idAlarma) {
+		for (Alarma alarma : alarmas) {
+			if(alarma.getId().equals(idAlarma)) {
+				return alarma;
+			}
+		} return null;
+	}
+
+	public Usuario obtenerUsuarioPorDni(Integer dniUsuario) {
+		for (Usuario usuario : usuarios) {
+			if (usuario.getDni().equals(dniUsuario)) {
+				return usuario;
+			}
+		}
+		return null;
+	}
+
+	public Integer getCantidadUsuarios() {
+		return usuarios.size();
+	}
+
+	public Alarma obtenerAlarmaPorId(Integer idAlarma) {
+		for (Alarma alarma : alarmas) {
+			if (alarma.getId().equals(idAlarma)) {
+				return alarma;
+			}
+		}
+		return null;
+	}
 	
 	
 }

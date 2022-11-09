@@ -2,6 +2,9 @@ package ar.edu.unlam.pb2;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 public class CentralAlarmasTest {
@@ -21,8 +24,9 @@ public class CentralAlarmasTest {
 	public void queSePuedaCrearUnUsuarioAdministrador() {
 		Integer dni = 5000;
 		String nombre = "PepeAdmin";
+		Central central = new Central ("Central");
 
-		Usuario usuario = new UsuarioAdministrador(dni, nombre);
+		Usuario usuario = new UsuarioAdministrador(dni, nombre, central);
 
 		assertEquals(dni, usuario.getDni());
 		assertEquals(nombre, usuario.getNombre());
@@ -72,16 +76,16 @@ public class CentralAlarmasTest {
 	}
 
 	@Test
-	public void queSePuedaRegistrarUnaAlarmaEnLaCentral() {
+	public void queSePuedaRegistrarUnaAlarmaEnLaCentral() throws CodigoAlarmaIncorrectoException {
 		String nombre = "CentralAlarmas";
 
 		Central central = new Central(nombre);
 
-		Usuario admin = new UsuarioAdministrador(3999, "Admino");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
 
 		Alarma alarma = crearAlarma(1);
 
-		Boolean valorObtenido = admin.agregarAlarma(central, alarma);
+		Boolean valorObtenido = ((UsuarioAdministrador) admin).agregarAlarma(central, alarma,alarma.getCodigoConfiguracion());
 
 		assertTrue(valorObtenido);
 	}
@@ -92,46 +96,164 @@ public class CentralAlarmasTest {
 
 		Central central = new Central(nombre);
 
-		Usuario admin = new UsuarioAdministrador(3999, "Admino");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
 		
 		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
 
-		Boolean valorObtenido = admin.registrarUsuarioALaCentral(central, usuario);
+		Boolean valorObtenido = ((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
 
 		assertTrue(valorObtenido);
+		
+		
+		Integer valorEsperado2 = 1;
+		Integer valorObtenido2 = central.getCantidadUsuarios();
+		assertEquals(valorEsperado2, valorObtenido2);
 
 	}
 
 	@Test
-	public void queSePuedaAgregarUnUsuarioValidoAUnaAlarma() {	
-		Usuario admin = new UsuarioAdministrador(3999, "Admino");
+	public void queSePuedaAgregarUnUsuarioValidoAUnaAlarma() throws CodigoAlarmaIncorrectoException {	
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
 		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
 		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
+		
+		((UsuarioAdministrador) admin).agregarUnUsuarioALaListaDeUsuariosDeUnaAlarma(usuario.getDni(), alarma.getId(), alarma.getCodigoConfiguracion());
 
-		Boolean valorObtenido = admin.agregarUsuarioValidoAUnaAlarma(usuario.getDni(), alarma.getId(), alarma.getCodigoConfiguracion());
+	}
+	
+	@Test
+	public void queSePuedaAgregarUnSensorAUnaAlarma() throws SensorDuplicadoException, CodigoAlarmaIncorrectoException {	
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
+		Sensor sensor = new Sensor(1);
+		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
 
-		assertTrue(valorObtenido);
+		
+		((UsuarioAdministrador) admin).agregarSensorAUnaAlarma(alarma.getId(), alarma.getCodigoConfiguracion(), sensor);
 
+		Integer valorEsperado = 1;
+		Integer valorObtenido = alarma.getCantidadSensores();
+		
+		assertEquals(valorEsperado, valorObtenido);
+	}
+	
+	@Test
+	public void queSePuedaActivarUnSensor() throws SensorDuplicadoException, CodigoAlarmaIncorrectoException {
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
+		Sensor sensor = new Sensor(1);
+		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
+		((UsuarioAdministrador) admin).agregarSensorAUnaAlarma(alarma.getId(), alarma.getCodigoConfiguracion(), sensor);
+		
+		((UsuarioAdministrador) admin).activarSensorDeUnaAlarma(sensor.getId(), alarma.getId(), alarma.getCodigoConfiguracion());
+		
+		assertTrue(sensor.estaActivo());
+	}
+	
+	@Test
+	public void queSePuedaActivarDesactivarUnaAlarma() throws SensorDuplicadoException, CodigoAlarmaIncorrectoException {
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
+		Sensor sensor = new Sensor(1);
+		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
+		((UsuarioAdministrador) admin).agregarSensorAUnaAlarma(alarma.getId(), alarma.getCodigoConfiguracion(), sensor);
+		((UsuarioAdministrador) admin).activarSensorDeUnaAlarma(sensor.getId(), alarma.getId(), alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).activarDesactivarAlarma(alarma, alarma.getCodigoActivacion());
+		
+		assertTrue(alarma.estaActiva());
+	}
+
+	@Test (expected = CodigoAlarmaIncorrectoException.class)
+	public void alAgregarUnUsuarioAUnaAlarmaConCodigoDeConfiguracionDeAlarmaInvalidoSeLanceCodigoAlarmaIncorrectoException() throws CodigoAlarmaIncorrectoException {
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
+		Sensor sensor = new Sensor(1);
+		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, "Cualquiercosa");
+	}
+
+	@Test(expected = SensorDuplicadoException.class)
+	public void alAgregarUnSensorDuplicadoEnUnaAlarmaSeLanceUnaSensorDuplicadoException() throws SensorDuplicadoException, CodigoAlarmaIncorrectoException {
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
+		Sensor sensor = new Sensor(1);
+		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
+		((UsuarioAdministrador) admin).agregarSensorAUnaAlarma(alarma.getId(), alarma.getCodigoConfiguracion(), sensor);
+		((UsuarioAdministrador) admin).agregarSensorAUnaAlarma(alarma.getId(), alarma.getCodigoConfiguracion(), sensor);
 	}
 
 	@Test
-	public void alAgregarUnUsuarioAUnaAlarmaConCodigoDeConfiguracionDeAlarmaInvalidoSeLanceCodigoAlarmaIncorrectoException() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void alAgregarUnSensorDuplicadoEnUnaAlarmaSeLanceUnaSensorDuplicadoException() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void queNoSePuedaActivarUnaAlarmaSiHayAlMenosUnSensorDesactivado() {
-		fail("Not yet implemented");
+	public void queNoSePuedaActivarUnaAlarmaSiHayAlMenosUnSensorDesactivado() throws SensorDuplicadoException, CodigoAlarmaIncorrectoException {
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Usuario usuario = new UsuarioConfigurador(2323, "Jose");
+		Sensor sensor = new Sensor(1);
+		Alarma alarma = crearAlarma(1);
+		
+		((UsuarioAdministrador) admin).agregarAlarma(central, alarma, alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).registrarUsuarioALaCentral(central, usuario);
+		((UsuarioAdministrador) admin).agregarSensorAUnaAlarma(alarma.getId(), alarma.getCodigoConfiguracion(), sensor);
+		//((UsuarioAdministrador) admin).activarSensorDeUnaAlarma(sensor.getId(), alarma.getId(), alarma.getCodigoConfiguracion());
+		((UsuarioAdministrador) admin).activarDesactivarAlarma(alarma, alarma.getCodigoActivacion());
+		
+		assertFalse(alarma.estaActiva());
 	}
 
 	@Test
 	public void queParaUnaAlarmaDeterminadaSePuedaObtenerUnaColeccionOrdenadaDeAccionesDeTipoConfiguracionOrdenadasPorIdDeAccion() {
-		fail("Not yet implemented");
+		Central central = new Central("CentralAlarmas");
+		Usuario admin = new UsuarioAdministrador(3999, "Admino", central);
+		Alarma alarma = crearAlarma(1);
+		
+		Accion accion2 = alarma.crearAccion(3, alarma, admin, 20220911, TipoDeOperacion.CONFIGURACION);
+		alarma.agregarAccion(accion2);
+		Accion accion1 = alarma.crearAccion(2, alarma, admin, 20220911, TipoDeOperacion.CONFIGURACION);
+		alarma.agregarAccion(accion1);
+		Accion accion3 = alarma.crearAccion(5, alarma, admin, 20220911, TipoDeOperacion.CONFIGURACION);
+		alarma.agregarAccion(accion3);
+		Accion accion4 = alarma.crearAccion(6, alarma, admin, 20220911, TipoDeOperacion.CONFIGURACION);
+		alarma.agregarAccion(accion4);
+		Accion accion5 = alarma.crearAccion(13, alarma, admin, 20220911, TipoDeOperacion.CONFIGURACION);
+		alarma.agregarAccion(accion5);
+		
+		List<Accion> accionesOrdenadas = new ArrayList<>();
+		
+		accionesOrdenadas.add(accion1);
+		accionesOrdenadas.add(accion2);
+		accionesOrdenadas.add(accion3);
+		accionesOrdenadas.add(accion4);
+		accionesOrdenadas.add(accion5);
+		
+		List<Accion> accionesObtenidas = new ArrayList<>();
+		
+		accionesObtenidas.addAll(alarma.getAcciones());
+		
+		assertEquals(accionesOrdenadas, accionesObtenidas);
+		
+		//Se que no esta implementado de la forma esperada, solo quería demostrar que sé utilizar TreeMaps y la interfaz Comparable
+		
 	}
 
 }
