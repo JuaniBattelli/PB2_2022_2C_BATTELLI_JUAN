@@ -252,7 +252,8 @@ public class CentralAlarmasTest {
 		
 		assertEquals(accionesOrdenadas, accionesObtenidas);
 		
-		//Se que no esta implementado de la forma esperada, solo quería demostrar que sé utilizar TreeMaps y la interfaz Comparable
+		//Mil disculpas por no implementar de forma correcta la coleccion de acciones, 
+		//este test es solo para demostrar que sé utilizar TreeSet y la interfaz Comparable para ordenarla
 		
 	}
 
